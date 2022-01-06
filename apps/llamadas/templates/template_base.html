@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        [class*="col-"] {
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            color: green;
+        }
+
+        .tipo {
+            color: red;
+            font-size: 25px;
+        }
+
+        .numero {
+            color: blue;
+            font-size: 20px;
+        }
+        .estado {
+            display: flow;
+            /* font-size: 10px; */
+        }
+        .estado .btn {
+            font-size: 10px;
+        }
+        .estado .fa  {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>
+        Protocolo de llamadas Ziru's Pizza
+    </h1>
+    <div class="container">
+        <div class="row row-flex content-agenda">
+            {% for punto in puntos %}
+            <div class="col-md-6 col-sm-12 row-flex content-punto">
+                <div class='h2 name punto'>
+                    {{ punto.nombre }}
+                </div>
+                {% for agenda in punto.agenda %}
+                    <div class='row row-flex record-numero'>
+                        <div class='col-xs-2 col-sm-2 col-md-1 tipo'>
+                            {% if agenda.tipo == 'PBX' %}
+                                <i class="fa fa-tty" aria-hidden="true"></i>
+                            {% elif agenda.tipo == 'Celular' %}
+                                <i class="fa fa-mobile" aria-hidden="true"></i>
+                            {% elif agenda.tipo == 'Fijo' %}
+                                <i class="fa fa-phone" aria-hidden="true"></i>
+                            {% endif %}
+                        </div>
+
+                        <div class='col-xs-10 col-sm-10 col-md-4 numero'>
+                            <a href="tel:{% if agenda.tipo == 'PBX' or agenda.tipo == 'Fijo' %}607{% endif %}{{ agenda.numero }}">
+                                    {{ agenda.numero }}
+                            </a>
+                            {% if agenda.tipo == 'PBX' %}-{{ agenda.extencion }}{% endif %}
+                        </div>
+                        <div class="col-xs-12 col-sm-12 col-md-7 estado row row-flex">
+
+                                <button type="button" id="button_llamando__{{ agenda.id }}" class="btn btn-warning col-xs-8 col-md-8 {% if agenda.estado == 'llamando' %} hidden {% endif %}" >
+                                    <i class="fa fa-phone-square" aria-hidden="true"></i>
+                                    <!-- Contestó -->
+                                </button>
+
+                                <button type="button" id="button_contesto_llamada__{{ agenda.id }}" class="btn btn-success col-xs-8 col-md-8 {% if agenda.estado != 'llamando' %} hidden {% endif %}" disabled>
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                    Contestó Llamada
+                                </button>
+
+                                <button type="button" id="button_desicion_contesto_llamada__{{ agenda.id }}" class="btn btn-success col-xs-5 col-md-5 {% if agenda.estado != 'llamando' %} hidden {% endif %}">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                    <!-- Contestó -->
+                                </button>
+
+                                <button  type="button" id="button_desicion_no_contesto_llamada__{{ agenda.id }}" class="btn btn-danger col-xs-5 col-md-5 {% if agenda.estado != 'llamando' %} hidden {% endif %}">
+                                    <i class="fa fa-times" aria-hidden="true"></i>
+                                    <!-- No Contestó -->
+                                </button>
+
+                                <button  type="button" id="button_edit__{{ agenda.id }}" class="btn btn-info col-xs-2 col-md-2 ">
+                                    <i class="fa fa-edit"></i>
+                                    <!-- Editar -->
+                                </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+<script>
+// READY
+// DEFINICION DE DOM ID
+// ACTIONS
+// SERVICE
+
+$(document).ready(PageReady);
+
+
+var DOM_IDS = {
+    BUTTON_LLAMANDO: 'button_llamando__',
+    BUTTON_CONTESTO_LLAMADA: 'button_contesto_llamada__',
+    BUTTON_DESICION_CONTESTO_LLAMADA: 'button_desicion_contesto_llamada__',
+    BUTTON_DESICION_NO_CONTESTO_LLAMADA: 'button_desicion_no_contesto_llamada__',
+    BUTTON_EDIT: 'button_edit__'
+}
+
+
+function PageReady() {
+    console.log('hola PageReady')
+    $(`[id*='${DOM_IDS.BUTTON_LLAMANDO}']`).on('click', listenButton);
+    $(`[id*='${DOM_IDS.BUTTON_CONTESTO_LLAMADA}']`).on('click', listenButton);
+    $(`[id*='${DOM_IDS.BUTTON_DESICION_CONTESTO_LLAMADA}']`).on('click', listenButton);
+    $(`[id*='${DOM_IDS.BUTTON_DESICION_NO_CONTESTO_LLAMADA}']`).on('click', listenButton);
+    $(`[id*='${DOM_IDS.BUTTON_EDIT}']`).on('click', listenButton);
+
+}
+
+function listenButton(){
+    var id_element = this.id
+    var id_agenda = id_element.split('__')[1]
+
+    console.log(this.id_element)
+    console.log(id_agenda)
+
+    if (id_element.includes(DOM_IDS.BUTTON_LLAMANDO)) {
+        action_button_llamando(id_agenda)
+    }
+
+    // var value = $(`#${DOM_IDS.INPUT_VALUE}`).val();
+    // console.log('this is the value: '+value)
+    // triggerGameTurn(1, value, triggerGameTurnSuccess, triggerGameTurnError )
+}
+
+function action_button_llamando(id) {
+    var current_id = DOM_IDS.BUTTON_LLAMANDO + id
+    console.log(current_id)
+    triggerGameTurn(id, 'LLAMANDO', triggerGameTurnSuccess, triggerGameTurnError )}
+
+function triggerGameTurnSuccess() {
+    console.log('triggerGameTurnSuccess')
+}
+
+
+function triggerGameTurnError() {
+    console.log('triggerGameTurnSuccess')
+}
+
+// SERVICE
+
+function triggerGameTurn(id, char, successCallback, errorCallback) {
+    data = {
+        'id': id,
+        'choise': char
+    }
+    $.ajax({
+        contentType: 'application/json;charset=UTF-8',
+        // headers: {
+        // "Authorization": `Bearer ${token}`,
+        // },
+        data: JSON.stringify(data),
+        error: errorCallback,
+        success: successCallback,
+        type: 'POST',
+        url: 'api_v1/llamando',
+    })
+}
+
+</script>
+</html>

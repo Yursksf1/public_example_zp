@@ -1,0 +1,28 @@
+{% block title %} index 2 {% endblock %}
+
+
+{% block content %}
+
+    <table>
+        <tr>
+            <th> Nombre </th>
+            <th> Direccion </th>
+            <th> Estado </th>
+        </tr>
+        {% for telefono in punto.agendatelefonica_set.all %}
+            <tr>
+                <td>
+                    {{ telefono.tipo}}
+                </td>
+                <td>
+                    {{ telefono.numero}}
+                </td>
+                <td>
+                    some
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+
+{% endblock %}
